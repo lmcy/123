@@ -105,9 +105,12 @@
 
         if (message.payload.parts) {
           message.payload.parts.forEach(part => {
-            if (part.mimeType.startsWith("image/") && part.body && part.body.attachmentId) {
+            if (part.filename && part.body && part.body.attachmentId) {
               // 如果发现图片附件，调用 displayAttachment 显示在页面上
               displayAttachment(messageId, part.body.attachmentId, part.mimeType);
+            } else if (part.mimeType.startsWith("image/")) {
+              // 如果图片嵌入在正文中，也显示出来
+              displayInlineImage(part);
             }
           });
         }
@@ -135,6 +138,19 @@
         console.log(`Attachment displayed.`);
       } catch (error) {
         console.error('Error displaying attachment:', error);
+      }
+    }
+
+    function displayInlineImage(part) {
+      try {
+        const imageData = `data:${part.mimeType};base64,${part.body.data}`;
+        const imgElement = document.createElement('img');
+        imgElement.src = imageData;
+        imgElement.alt = 'Inline Verification Code Image';
+        document.getElementById('content').appendChild(imgElement);
+        console.log(`Inline image displayed.`);
+      } catch (error) {
+        console.error('Error displaying inline image:', error);
       }
     }
 
