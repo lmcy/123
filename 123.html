@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="google-site-verification" content="lGFBocGLgbYlYuHuOjc4WYd9PoiYi9oZlaP3RQUTzFo" />
   <title>Gmail API Quickstart</title>
   <meta charset="utf-8" />
-  <style>
-    img {
-      max-width: 300px;  /* 限制验证码图片的最大宽度 */
-      height: auto;      /* 高度自动调整以保持比例 */
-    }
-  </style>
 </head>
 <body>
   <h1>Gmail API - 查看邮件内容</h1>
+  <!-- Authorization and sign-out buttons -->
   <button id="authorize_button" style="display: none;">Authorize</button>
   <button id="signout_button" style="display: none;">Sign Out</button>
   <pre id="content" style="white-space: pre-wrap;"></pre>
@@ -19,8 +15,8 @@
   <script src="https://apis.google.com/js/api.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
-    const CLIENT_ID = 'YOUR_CLIENT_ID';  // 替换为您的客户端 ID
-    const API_KEY = 'YOUR_API_KEY';      // 替换为您的 API Key
+    const CLIENT_ID = '528018632775-00cal8cae55m9giff4fshgpp0bnrdca3.apps.googleusercontent.com';
+    const API_KEY = 'AIzaSyDlF-TENmHtMaRUDTndgNtkzwbhgI8wUFI';
     const SCOPES = 'https://www.googleapis.com/auth/gmail.readonly';
     const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest';
 
@@ -28,6 +24,7 @@
     let gapiInited = false;
     let gisInited = false;
 
+    // 初始化 Google API 客户端
     function gapiLoaded() {
       gapi.load('client', initializeGapiClient);
     }
@@ -41,6 +38,7 @@
       maybeEnableButtons();
     }
 
+    // 初始化 Google Identity Services 客户端
     function gisLoaded() {
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
@@ -68,6 +66,7 @@
       }
     }
 
+    // 获取最近的邮件列表
     async function listEmails() {
       try {
         const response = await gapi.client.gmail.users.messages.list({
@@ -87,6 +86,7 @@
       }
     }
 
+    // 获取单封邮件内容
     async function getEmailContent(messageId) {
       try {
         const response = await gapi.client.gmail.users.messages.get({
@@ -100,38 +100,8 @@
         const snippet = message.snippet || 'No Content';
 
         document.getElementById('content').innerText += `\nFrom: ${from}\nSubject: ${subject}\nSnippet: ${snippet}\n\n`;
-
-        if (message.payload.parts) {
-          message.payload.parts.forEach(part => {
-            if (part.filename && part.body && part.body.attachmentId) {
-              displayAttachment(messageId, part.body.attachmentId, part.mimeType);
-            }
-          });
-        }
       } catch (error) {
         console.error('Error fetching email content:', error);
-      }
-    }
-
-    async function displayAttachment(messageId, attachmentId, mimeType) {
-      try {
-        const attachmentResponse = await gapi.client.gmail.users.messages.attachments.get({
-          'userId': 'me',
-          'messageId': messageId,
-          'id': attachmentId
-        });
-        const attachmentData = attachmentResponse.result.data;
-
-        const imageData = `data:${mimeType};base64,${attachmentData}`;
-        
-        const imgElement = document.createElement('img');
-        imgElement.src = imageData;
-        imgElement.alt = 'Verification Code Image';
-
-        document.getElementById('content').appendChild(imgElement);
-        console.log(`Attachment displayed.`);
-      } catch (error) {
-        console.error('Error displaying attachment:', error);
       }
     }
 
@@ -144,6 +114,7 @@
       });
     }
 
+    // 加载 GAPI 和 GIS 客户端
     window.onload = () => {
       gapi.load("client", gapiLoaded);
       google.accounts.id.initialize({ client_id: CLIENT_ID });
