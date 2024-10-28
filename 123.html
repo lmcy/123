@@ -105,13 +105,13 @@
 
         if (message.payload.parts) {
           message.payload.parts.forEach(part => {
-            if (part.body && part.body.attachmentId) {
-              // 如果发现附件，调用 displayAttachment 显示在页面上
-              displayAttachment(messageId, part.body.attachmentId, part.mimeType);
-            }
-            // 检查是否有内联图片
-            if (part.mimeType.startsWith("image/") && part.body.data) {
-              displayInlineImage(part);
+            if (part.mimeType === 'text/html') {
+              const encodedBody = part.body.data;
+              if (encodedBody) {
+                const decodedHtml = decodeURIComponent(escape(window.atob(encodedBody.replace(/-/g, '+').replace(/_/g, '/'))));
+                document.getElementById('content').innerHTML += decodedHtml;
+                displayImages(decodedHtml);
+              }
             }
           });
         }
@@ -120,39 +120,21 @@
       }
     }
 
-    async function displayAttachment(messageId, attachmentId, mimeType) {
-      try {
-        const attachmentResponse = await gapi.client.gmail.users.messages.attachments.get({
-          'userId': 'me',
-          'messageId': messageId,
-          'id': attachmentId
-        });
-        const attachmentData = attachmentResponse.result.data;
-
-        const imageData = `data:${mimeType};base64,${attachmentData}`;
-        
-        const imgElement = document.createElement('img');
-        imgElement.src = imageData;
-        imgElement.alt = 'Attachment Image';
-
-        document.getElementById('content').appendChild(imgElement);
-        console.log(`Attachment displayed.`);
-      } catch (error) {
-        console.error('Error displaying attachment:', error);
-      }
-    }
-
-    function displayInlineImage(part) {
-      try {
-        const imageData = `data:${part.mimeType};base64,${part.body.data}`;
-        const imgElement = document.createElement('img');
-        imgElement.src = imageData;
-        imgElement.alt = 'Inline Image';
-        document.getElementById('content').appendChild(imgElement);
-        console.log(`Inline image displayed.`);
-      } catch (error) {
-        console.error('Error displaying inline image:', error);
-      }
+    function displayImages(decodedHtml) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = decodedHtml;
+      const images = tempDiv.querySelectorAll("img");
+      
+      images.forEach(img => {
+        const src = img.getAttribute("src");
+        if (src && src.startsWith("https://mail.google.com/")) {
+          const imgElement = document.createElement('img');
+          imgElement.src = src;
+          imgElement.alt = "Embedded Image";
+          imgElement.style.maxWidth = '300px';
+          document.getElementById('content').appendChild(imgElement);
+        }
+      });
     }
 
     function handleSignoutClick() {
