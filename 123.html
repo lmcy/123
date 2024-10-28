@@ -2,7 +2,12 @@
 <html>
 <head>
   <meta name="google-site-verification" content="lGFBocGLgbYlYuHuOjc4WYd9PoiYi9oZlaP3RQUTzFo" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://ci3.googleusercontent.com/; script-src 'self' https://apis.google.com; connect-src 'self' https://www.googleapis.com/">
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  img-src 'self' https://ci3.googleusercontent.com/;
+  script-src 'self' 'unsafe-inline' https://apis.google.com;
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://www.googleapis.com;">
 <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
 <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
   <title>Gmail API Quickstart</title>
