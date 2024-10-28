@@ -1,15 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="google-site-verification" content="lGFBocGLgbYlYuHuOjc4WYd9PoiYi9oZlaP3RQUTzFo" />
-<meta http-equiv="Content-Security-Policy" content="
-  default-src 'self';
-  img-src 'self' https://ci3.googleusercontent.com/;
-  script-src 'self' 'unsafe-inline' https://apis.google.com;
-  style-src 'self' 'unsafe-inline';
-  connect-src 'self' https://www.googleapis.com;">
-<meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
-<meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+   <meta name="google-site-verification" content="lGFBocGLgbYlYuHuOjc4WYd9PoiYi9oZlaP3RQUTzFo" />
   <title>Gmail API Quickstart</title>
   <meta charset="utf-8" />
   <style>
@@ -113,13 +105,12 @@
 
         if (message.payload.parts) {
           message.payload.parts.forEach(part => {
-            if (part.mimeType === 'text/html') {
-              const encodedBody = part.body.data;
-              if (encodedBody) {
-                const decodedHtml = decodeURIComponent(escape(window.atob(encodedBody.replace(/-/g, '+').replace(/_/g, '/'))));
-                document.getElementById('content').innerHTML += decodedHtml;
-                displayImages(decodedHtml);
-              }
+            if (part.filename && part.body && part.body.attachmentId) {
+              // 如果发现图片附件，调用 displayAttachment 显示在页面上
+              displayAttachment(messageId, part.body.attachmentId, part.mimeType);
+            } else if (part.mimeType.startsWith("image/")) {
+              // 如果图片嵌入在正文中，也显示出来
+              displayInlineImage(part);
             }
           });
         }
@@ -128,22 +119,39 @@
       }
     }
 
-    function displayImages(decodedHtml) {
-      // 查找正文中的所有 img 标签
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = decodedHtml;
-      const images = tempDiv.querySelectorAll("img");
-      
-      images.forEach(img => {
-        const src = img.getAttribute("src");
-        if (src && src.startsWith("https://ci3.googleusercontent.com/")) {
-          const imgElement = document.createElement('img');
-          imgElement.src = src;
-          imgElement.alt = "Verification Code Image";
-          imgElement.style.maxWidth = '300px';
-          document.getElementById('content').appendChild(imgElement);
-        }
-      });
+    async function displayAttachment(messageId, attachmentId, mimeType) {
+      try {
+        const attachmentResponse = await gapi.client.gmail.users.messages.attachments.get({
+          'userId': 'me',
+          'messageId': messageId,
+          'id': attachmentId
+        });
+        const attachmentData = attachmentResponse.result.data;
+
+        const imageData = `data:${mimeType};base64,${attachmentData}`;
+        
+        const imgElement = document.createElement('img');
+        imgElement.src = imageData;
+        imgElement.alt = 'Verification Code Image';
+
+        document.getElementById('content').appendChild(imgElement);
+        console.log(`Attachment displayed.`);
+      } catch (error) {
+        console.error('Error displaying attachment:', error);
+      }
+    }
+
+    function displayInlineImage(part) {
+      try {
+        const imageData = `data:${part.mimeType};base64,${part.body.data}`;
+        const imgElement = document.createElement('img');
+        imgElement.src = imageData;
+        imgElement.alt = 'Inline Verification Code Image';
+        document.getElementById('content').appendChild(imgElement);
+        console.log(`Inline image displayed.`);
+      } catch (error) {
+        console.error('Error displaying inline image:', error);
+      }
     }
 
     function handleSignoutClick() {
