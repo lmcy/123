@@ -121,14 +121,17 @@
     }
 
     function displayImages(decodedHtml) {
+      console.log(333,decodedHtml)
       // 查找正文中的所有 img 标签
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = decodedHtml;
       const images = tempDiv.querySelectorAll("img");
+      console.log(222,images)
       images.forEach(img => {
+        console.log(123,img)
         const src = img.getAttribute("src");
 
-        console.log(123,src)
+        
         if (src && src.startsWith("https://mail.google.com/")) {
           const imgElement = document.createElement('img');
           imgElement.src = src;
