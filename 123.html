@@ -125,12 +125,10 @@
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = decodedHtml;
       const images = tempDiv.querySelectorAll("img");
-        
-      console.log(images)
-
-
       images.forEach(img => {
         const src = img.getAttribute("src");
+
+        console.log(123,src)
         if (src && src.startsWith("https://mail.google.com/")) {
           const imgElement = document.createElement('img');
           imgElement.src = src;
